@@ -1,0 +1,184 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  /* color: rgba(255, 255, 255, 0.87); */
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+
+body {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: rgb(47, 1, 1) !important;
+}
+
+.form-label{
+  color: antiquewhite;
+}
+
+input{
+  border: 2px solid rgb(190, 28, 28) !important;
+}
+
+.form-control{
+background-color: #391414 !important;
+color: antiquewhite;
+
+}
+.form-select{
+background-color: #393838 !important;
+color: antiquewhite;
+border: none !important;
+
+
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+  outline:none !important;
+  box-shadow: none !important;
+}
+input,
+select,
+textarea{
+margin-bottom: 20px !important;
+
+}
+
+select{
+  color: #ccc !important;
+  border: none !important;
+  cursor: pointer;
+
+}
+
+input::placeholder{
+  color: antiquewhite !important;
+
+}
+
+.Toastify__close-button--light{
+display: none;  
+}
+
+
+
+
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+.card {
+  background-color: rgb(47, 1, 1) !important;
+  border: none;
+  box-shadow: none;
+  padding: 2rem;
+  max-width: 700px;
+  margin: 0 auto;
+  border-radius: 12px;
+  animation: fadeIn 1s ease-in-out;
+
+}
+
+button {
+  background-color: #ff0000 !important;
+  margin-right: 350px !important;
+  display: block;
+  width: 100%;
+  max-width: 250px;
+  transition: transform 0.5s ease;
+
+}
+
+
+@media screen and (max-width: 768px) {
+  .d-flex {
+    flex-direction: column !important;
+  }
+
+  .d-flex > div {
+    width: 100% !important;
+    margin: 0 !important;
+    margin-bottom: 1rem;
+  }
+
+  .btn {
+    width: 100% !important;
+    margin-right: 350px !important;
+  }
+
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  .container {
+    padding: 1rem !important;
+  }
+  
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+button:hover {
+transform: 0.3s !important;}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    background-color: rgb(47, 1, 1) !important;
+  }
+  
+}
+
+
+.scroll-to-top {
+ 
+  width: 40px;
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background-color: #ff0000;
+  color: white;
+  padding: 10px;
+  font-size: 25px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.5s ease;
+  z-index: 999;
+}
+
+.scroll-to-top:hover {
+  transform: scale(1.2);
+}
+

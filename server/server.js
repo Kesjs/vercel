@@ -5,12 +5,8 @@ const path = require('path');
 const mysql = require('mysql2');
 const fs = require('fs');
 const uploadDir = './uploads';
-
-if (!fs.existsSync(uploadDir)){
-    fs.mkdirSync(uploadDir);
-}
-const bcrypt = require('bcryptjs'); // Pour le hashage du mot de passe
-const jwt = require('jsonwebtoken'); // Pour créer les tokens JWT
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 require('dotenv').config(); // Pour charger les variables d'environnement
 
 const app = express();
@@ -27,59 +23,127 @@ const corsOptions = {
     allowedHeaders: ['Content-Type', 'Authorization'],  // Ajout de 'Authorization'
     credentials: true  // Si vous utilisez des cookies ou des informations de session
 };
-
 app.use(cors(corsOptions));
+
+// Vérification du dossier de téléchargement
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
 
 // Connexion à la base de données MySQL
 const connection = mysql.createConnection({
-    host: process.env.DB_HOST || '127.0.0.1',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'tickets',
-});
+    host: process.env.DB_HOST || '193.203.168.99',
+    user: process.env.DB_USERNAME || 'u353017205_root',
+    password: process.env.DB_PASSWORD || 'Picasso97?',
+    database: process.env.DB_DATABASE || 'u353017205_root',
+    port: process.env.DB_PORT || 3306, // Assurez-vous que le port est correct
+    connectTimeout: 10000, 
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,});
 
+connection.on('error', (err) => {
+    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+      console.log('Connexion perdue, tentative de reconnexion...');
+      // Reconnectez-vous ici
+    } else {
+      console.error(err);
+    }
+  });
+  const pool = mysql.createPool({
+    host: 'localhost',  // Adresse de ton serveur MySQL
+    user: 'root',       // Ton utilisateur MySQL
+    password: 'password', // Ton mot de passe MySQL
+    database: 'your_database', // Ton nom de base de données
+    waitForConnections: true,  // Attendre que la connexion soit disponible
+    connectionLimit: 10,       // Nombre maximum de connexions simultanées
+    queueLimit: 0,             // Pas de limite sur la taille de la file d'attente
+  });
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error('Erreur lors de l\'obtention de la connexion', err);
+      return;
+    }
+    connection.query('YOUR SQL QUERY HERE', (err, results) => {
+      connection.release();
+      if (err) {
+        console.error('Erreur lors de la requête', err);
+      } else {
+        console.log('Résultats', results);
+      }
+    });
+  });
 connection.connect((err) => {
     if (err) {
         console.error('Erreur de connexion à la base de données : ' + err.stack);
         return;
     }
     console.log('Connecté à la base de données MySQL avec l’ID ' + connection.threadId);
+
+    // Création des tables si elles n'existent pas
+    const createUsersTable = `
+    CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(255) NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    `;
+    connection.query(createUsersTable, (err, results) => {
+        if (err) {
+            console.error('Erreur lors de la création de la table users : ' + err.stack);
+            return;
+        }
+        console.log('Table users créée avec succès');
+    });
+
+    const createTicketsTable = `
+    CREATE TABLE IF NOT EXISTS tickets (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        first_name VARCHAR(255) NOT NULL,
+        last_name VARCHAR(255) NOT NULL,
+        phone_number VARCHAR(15),
+        email VARCHAR(255),
+        card_type VARCHAR(50),
+        code VARCHAR(50),
+        image_path TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    `;
+    connection.query(createTicketsTable, (err, results) => {
+        if (err) {
+            console.error('Erreur lors de la création de la table tickets : ' + err.stack);
+            return;
+        }
+        console.log('Table tickets créée avec succès');
+    });
 });
 
-// Spécification de la destination des fichiers avec Multer
 // Spécification de la destination des fichiers avec Multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        // Indique où enregistrer le fichier téléchargé
-        cb(null, 'uploads/');  // Le dossier "uploads" où seront stockés les fichiers
+        cb(null, 'uploads/');
     },
     filename: (req, file, cb) => {
-        // Génère un nom de fichier unique avec la date actuelle pour éviter les conflits
-        cb(null, Date.now() + path.extname(file.originalname));  // Exemple : 1615204732952.jpg
+        cb(null, Date.now() + path.extname(file.originalname));
     }
 });
 
-// Configuration de Multer avec une taille limite et une validation des types de fichiers
+// Configuration de Multer
 const upload = multer({
-    storage: storage,  // Utilisation de la configuration de stockage
-    limits: { 
-        fileSize: 5 * 1024 * 1024  // Limite de taille de fichier à 5 Mo (5 * 1024 * 1024 octets)
-    },
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
-        // Validation des types de fichiers autorisés
-        const filetypes = /jpeg|jpg|png|gif/;  // Types de fichiers autorisés
-        const mimetype = filetypes.test(file.mimetype);  // Vérifie le type MIME
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());  // Vérifie l'extension du fichier
-
-        // Si le fichier est valide, passe au suivant, sinon retourne une erreur
+        const filetypes = /jpeg|jpg|png|gif/;
+        const mimetype = filetypes.test(file.mimetype);
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
         if (mimetype && extname) {
-            return cb(null, true);  // Accepte le fichier
+            return cb(null, true);
         } else {
-            cb(new Error('Seuls les fichiers images sont autorisés'), false);  // Refuse le fichier
+            cb(new Error('Seuls les fichiers images sont autorisés'), false);
         }
     }
 });
-
 
 // Route POST pour l'inscription d'un utilisateur
 app.post('/api/register', async (req, res) => {
@@ -129,7 +193,7 @@ app.post('/api/login', (req, res) => {
             return res.status(401).json({ message: 'Nom d\'utilisateur ou mot de passe incorrect' });
         }
 
-        // Création du token JWT pour l'utilisateur
+        // Création du token JWT
         const token = jwt.sign({ id: user.id, username: user.username }, 'secret_key', { expiresIn: '1h' });
 
         res.json({ message: 'Connexion réussie', token });
@@ -137,21 +201,15 @@ app.post('/api/login', (req, res) => {
 });
 
 // Route POST pour la vérification de ticket avec Multer pour les images
-// Route POST pour la vérification de ticket avec Multer pour les images
 app.post('/api/verifier-ticket', upload.single('image'), (req, res) => {
-    console.log('Requête reçue');
-    console.log('Corps de la requête :', req.body);
-    console.log('Fichier reçu :', req.file);  // Ceci contient le fichier téléchargé
-
     const { first_name, last_name, phone_number, email, card_type, code } = req.body;
-    const image = req.file;  // Le fichier téléchargé sera dans req.file
+    const image = req.file;
 
     if (!first_name || !last_name || !phone_number || !email || !card_type || !code || !image) {
         return res.status(400).json({ success: false, message: 'Tous les champs sont requis' });
     }
 
-    const imagePath = image.path;  // Le chemin de l'image enregistrée dans le dossier "uploads"
-    console.log('Chemin de l\'image :', imagePath);
+    const imagePath = image.path;
 
     // Insertion dans la base de données
     const query = 'INSERT INTO tickets (first_name, last_name, phone_number, email, card_type, code, image_path) VALUES (?, ?, ?, ?, ?, ?, ?)';
@@ -167,11 +225,9 @@ app.post('/api/verifier-ticket', upload.single('image'), (req, res) => {
     });
 });
 
-
 // GET - Liste de tous les tickets
 app.get('/api/tickets', (req, res) => {
     const query = 'SELECT * FROM tickets';
-
     connection.query(query, (err, results) => {
         if (err) {
             console.error('Erreur SQL', err);
@@ -185,16 +241,13 @@ app.get('/api/tickets', (req, res) => {
 // Gestion des erreurs de multer
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
-        // Si l'erreur est liée à Multer
         console.error('Erreur Multer :', err);
         return res.status(400).json({ success: false, message: 'Erreur de téléchargement de fichier' });
     } else {
-        // Erreur générale interne du serveur
         console.error('Erreur interne :', err);
         return res.status(500).json({ success: false, message: 'Erreur interne du serveur' });
     }
 });
-
 
 // Accès aux fichiers dans le dossier "uploads"
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

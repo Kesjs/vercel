@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: mon-backend
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
+    plan: free
+    branch: main
+    rootDir: server  # <- backend à la racine
+
+  - type: web
+    name: mon-frontend
+    env: node
+    buildCommand: cd client && npm install && npm run build
+    startCommand: cd client && npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
+    plan: free
+    branch: main
+    rootDir: client  # <- frontend dans client/

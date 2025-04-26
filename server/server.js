@@ -31,16 +31,17 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // Connexion à la base de données MySQL
-const connection = mysql.createConnection({
+const connection = mysql.createPool({
     host: process.env.DB_HOST || '193.203.168.99',
     user: process.env.DB_USERNAME || 'u353017205_root',
     password: process.env.DB_PASSWORD || 'Picasso97?',
     database: process.env.DB_DATABASE || 'u353017205_root',
-    port: process.env.DB_PORT || 3306, // Assurez-vous que le port est correct
-    connectTimeout: 10000, 
+    port: process.env.DB_PORT || 3306,
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0,});
+    queueLimit: 0,
+});
+
 
 connection.on('error', (err) => {
     if (err.code === 'PROTOCOL_CONNECTION_LOST') {
@@ -50,74 +51,8 @@ connection.on('error', (err) => {
       console.error(err);
     }
   });
-  const pool = mysql.createPool({
-    host: 'localhost',  // Adresse de ton serveur MySQL
-    user: 'root',       // Ton utilisateur MySQL
-    password: 'password', // Ton mot de passe MySQL
-    database: 'your_database', // Ton nom de base de données
-    waitForConnections: true,  // Attendre que la connexion soit disponible
-    connectionLimit: 10,       // Nombre maximum de connexions simultanées
-    queueLimit: 0,             // Pas de limite sur la taille de la file d'attente
-  });
-  pool.getConnection((err, connection) => {
-    if (err) {
-      console.error('Erreur lors de l\'obtention de la connexion', err);
-      return;
-    }
-    connection.query('YOUR SQL QUERY HERE', (err, results) => {
-      connection.release();
-      if (err) {
-        console.error('Erreur lors de la requête', err);
-      } else {
-        console.log('Résultats', results);
-      }
-    });
-  });
-connection.connect((err) => {
-    if (err) {
-        console.error('Erreur de connexion à la base de données : ' + err.stack);
-        return;
-    }
-    console.log('Connecté à la base de données MySQL avec l’ID ' + connection.threadId);
 
-    // Création des tables si elles n'existent pas
-    const createUsersTable = `
-    CREATE TABLE IF NOT EXISTS users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(255) NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-    `;
-    connection.query(createUsersTable, (err, results) => {
-        if (err) {
-            console.error('Erreur lors de la création de la table users : ' + err.stack);
-            return;
-        }
-        console.log('Table users créée avec succès');
-    });
 
-    const createTicketsTable = `
-    CREATE TABLE IF NOT EXISTS tickets (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        first_name VARCHAR(255) NOT NULL,
-        last_name VARCHAR(255) NOT NULL,
-        phone_number VARCHAR(15),
-        email VARCHAR(255),
-        card_type VARCHAR(50),
-        code VARCHAR(50),
-        image_path TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-    `;
-    connection.query(createTicketsTable, (err, results) => {
-        if (err) {
-            console.error('Erreur lors de la création de la table tickets : ' + err.stack);
-            return;
-        }
-        console.log('Table tickets créée avec succès');
-    });
-});
 
 // Spécification de la destination des fichiers avec Multer
 const storage = multer.diskStorage({

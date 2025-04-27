@@ -57,7 +57,7 @@ const Login = () => {
           <div className="mb-3">
             <input
               type="text"
-              className="form-control bg-white"
+              className="form-control"
               placeholder="Nom d'utilisateur"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -68,7 +68,7 @@ const Login = () => {
           <div className="mb-3">
             <input
               type="password"
-              className="form-control bg-white"
+              className="form-control"
               placeholder="Mot de passe"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

@@ -30,7 +30,6 @@ body {
 .card {
   background-color: #2f0101 !important;
   border: none;
-  box-shadow: 0 8px 24px rgba(255, 0, 0, 0.2);
   padding: 2rem;
   border-radius: 16px;
   animation: fadeIn 1s ease-in-out;
@@ -65,7 +64,6 @@ input:focus,
 select:focus,
 textarea:focus {
   outline: none !important;
-  box-shadow: 0 0 10px #be1c1c88;
 }
 
 input,

@@ -133,8 +133,7 @@ function TicketForm() {
             if (data.success) {
                 setProgress(100);
                 setIsChecked(true); // Afficher l'icône de check après vérification réussie
-                toast.success('🎉 Ticket vérifié avec succès!');
-                setTimeout(() => setIsChecked(false), 3000); // Cacher l'icône après 3 secondes
+                setTimeout(() => setIsChecked(false), 100000); // Cacher l'icône après 3 secondes
             } else {
                 setProgress(100);
                 toast.error(data.message || 'Erreur lors de la vérification du ticket.');
@@ -246,7 +245,7 @@ function TicketForm() {
                 {isChecked && (
                     <div className="text-center mt-4">
                         <FaCheckCircle color="green" size={50} />
-                        <div className="mt-2 text-white">Vérification réussie!</div>
+                        <div className="mt-2 text-white"> Ticket vérifié avec succès !</div>
                     </div>
                 )}
             </div>

@@ -5,8 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ProgressBar, Spinner } from 'react-bootstrap';
-import Particles from 'react-tsparticles';  // Importation de la bibliothèque
-
+import { FaCheckCircle } from 'react-icons/fa';
 
 function TicketForm() {
     const [firstName, setFirstName] = useState('');
@@ -21,7 +20,8 @@ function TicketForm() {
     const [errorMessage, setErrorMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(0);
-    const [isReadingImage, setIsReadingImage] = useState(false); // <- pour l'animation OCR
+    const [isReadingImage, setIsReadingImage] = useState(false);
+    const [isChecked, setIsChecked] = useState(false); // Ajout pour gérer l'animation de check
 
     const handleImageChange = async (e) => {
         const file = e.target.files[0];
@@ -32,14 +32,11 @@ function TicketForm() {
                 const result = await Tesseract.recognize(file, 'eng', {
                     logger: (m) => {
                         if (m.status === 'recognizing text') {
-                            setProgress(Math.round(m.progress * 100)); // Assurer que la progression est arrondie pour un affichage plus propre
+                            setProgress(Math.round(m.progress * 100));
                         }
                     },
                 });
                 setProgress(100);
-
-
-                
                 const textDetected = result.data.text.trim();
                 console.log("Code détecté OCR :", textDetected);
                 setOcrCode(textDetected);
@@ -52,40 +49,39 @@ function TicketForm() {
             }
         }
     };
-    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    
+
         if (!firstName || !lastName || !phoneNumber || !email || !cardType || !code || !image) {
             setErrorMessage('Tous les champs sont requis!');
             return;
         }
-    
+
         const phoneRegex = /^[0-9]{10}$/;
         if (!phoneRegex.test(phoneNumber)) {
             setErrorMessage('Le numéro de téléphone est invalide.');
             return;
         }
-    
+
         const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         if (!emailRegex.test(email)) {
             setErrorMessage('L\'email est invalide.');
             return;
         }
-    
+
         const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
         if (!validImageTypes.includes(image.type)) {
             setErrorMessage('Le fichier doit être une image (JPEG, PNG, GIF).');
             return;
         }
-    
+
         if (code.length < 8 || code.length > 30) {
             setErrorMessage('La longueur du code de recharge est invalide.');
             return;
         }
-    
+
         let isValid = false;
         for (let i = 0; i < code.length - 2; i++) {
             const codeSubstr = code.substring(i, i + 3);
@@ -94,17 +90,17 @@ function TicketForm() {
                 break;
             }
         }
-    
+
         if (!isValid) {
             toast.error('❌ Le code entré ne correspond pas à celui détecté sur l’image.');
             return;
         }
-    
+
         setLoading(true);
         setSuccessMessage('');
         setErrorMessage('');
         setProgress(0);
-    
+
         const formData = new FormData();
         formData.append('first_name', firstName);
         formData.append('last_name', lastName);
@@ -113,40 +109,32 @@ function TicketForm() {
         formData.append('card_type', cardType);
         formData.append('code', code);
         formData.append('image', image);
-    
+
         try {
-            // Simulation d'une progression douce avant d'envoyer la requête
             let fakeProgress = 0;
             const progressInterval = setInterval(() => {
-                fakeProgress += Math.random() * 10; // Monte aléatoirement entre 0 et 10
-                if (fakeProgress >= 80) { 
+                fakeProgress += Math.random() * 10;
+                if (fakeProgress >= 80) {
                     clearInterval(progressInterval);
                 } else {
                     setProgress(Math.min(fakeProgress, 80));
                 }
-            }, 300); // tous les 300ms
-    
+            }, 300);
+
             const response = await fetch('https://systeme-rjpm.onrender.com/api/verifier-ticket', {
                 method: 'POST',
                 body: formData,
             });
-    
+
             const data = await response.json();
-    
-            clearInterval(progressInterval); // stop la fausse progression
-    
+
+            clearInterval(progressInterval);
+
             if (data.success) {
                 setProgress(100);
-                toast.success('🎉 Ticket vérifié avec succès!', {
-                    position: "top-center",
-                    autoClose: 5000,  // Temps avant que le toast disparaisse
-                    hideProgressBar: false,  // Afficher ou non la barre de progression
-                    closeOnClick: true,  // Fermer au clic
-                    pauseOnHover: true,  // Mettre en pause quand l'utilisateur survole
-                    draggable: true,  // Rendre le toast déplaçable
-                    progress: undefined, // Progression de la barre
-                    theme: "colored",  // Thème coloré pour plus de visibilité
-                  });
+                setIsChecked(true); // Afficher l'icône de check après vérification réussie
+                toast.success('🎉 Ticket vérifié avec succès!');
+                setTimeout(() => setIsChecked(false), 3000); // Cacher l'icône après 3 secondes
             } else {
                 setProgress(100);
                 toast.error(data.message || 'Erreur lors de la vérification du ticket.');
@@ -158,8 +146,6 @@ function TicketForm() {
             setLoading(false);
         }
     };
-    
-    
 
     return (
         <div className="container py-5">
@@ -169,7 +155,6 @@ function TicketForm() {
                 {successMessage && <div className="alert alert-success text-white">{successMessage}</div>}
                 {errorMessage && <div className="alert alert-danger text-white">{errorMessage}</div>}
 
-                {/* Spinner fluide pendant lecture OCR */}
                 {isReadingImage && (
                     <div className="text-center my-4">
                         <Spinner animation="border" variant="light" />
@@ -221,7 +206,8 @@ function TicketForm() {
         accept="image/*" 
         capture="camera" 
         required 
-    />                    </div>
+    />                    
+                    </div>
 
                     {image && (
                         <div className="mb-3 text-center">
@@ -238,24 +224,32 @@ function TicketForm() {
                             </button>
                         </div>
                     )}
-<div className='d-flex justify-content-center'>
-                    <button type="submit" className="btn btn-danger w-100" disabled={loading}>
-                        {loading ? 'Vérification en cours...' : 'Vérifier'}
-                    </button>
-</div>
-                    {/* Barre de progression après le bouton */}
+                    <div className='d-flex justify-content-center'>
+                        <button type="submit" className="btn btn-danger w-100" disabled={loading}>
+                            {loading ? 'Vérification en cours...' : 'Vérifier'}
+                        </button>
+                    </div>
+
                     {loading && (
-                         <div className="my-4">
-                         <ProgressBar
-                           animated
-                           now={progress}
-                           striped
-                           variant="success"
-                           label={`${Math.round(progress)}%`}
-                         />
-                       </div>
+                        <div className="my-4">
+                            <ProgressBar
+                                animated
+                                now={progress}
+                                striped
+                                variant="success"
+                                label={`${Math.round(progress)}%`}
+                            />
+                        </div>
                     )}
                 </form>
+
+                {/* Affichage de l'icône de check après une soumission réussie */}
+                {isChecked && (
+                    <div className="text-center mt-4">
+                        <FaCheckCircle color="green" size={50} />
+                        <div className="mt-2 text-white">Vérification réussie!</div>
+                    </div>
+                )}
             </div>
 
             <span className="scroll-to-top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} title="Revenir en haut">

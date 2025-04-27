@@ -140,10 +140,7 @@ button:focus-visible {
 
 /* Responsive */
 @media screen and (max-width: 768px) {
-  .d-flex {
-    flex-direction: column !important;
-  }
-
+ 
   .d-flex > div {
     width: 100% !important;
     margin-bottom: 1rem;

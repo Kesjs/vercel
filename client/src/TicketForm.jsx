@@ -151,10 +151,10 @@ function TicketForm() {
 
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3 d-flex flex-wrap">
-                        <div className="me-2 flex-fill mb-2 mb-md-0">
+                        <div className=" flex-fill mb-2 mb-md-0">
                             <input type="text" placeholder="Prénom" className="form-control text-white" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
                         </div>
-                        <div className="ms-2 flex-fill mb-2 mb-md-0">
+                        <div className=" flex-fill mb-2 mb-md-0">
                             <input type="text" placeholder="Nom" className="form-control text-white" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
                         </div>
                     </div>

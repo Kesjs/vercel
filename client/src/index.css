@@ -53,7 +53,7 @@ h1 {
   color: antiquewhite !important;
   border: 2px solid #be1c1c !important;
   border-radius: 10px;
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
 }
 
 input::placeholder {
@@ -66,11 +66,7 @@ textarea:focus {
   outline: none !important;
 }
 
-input,
-select,
-textarea {
-  margin-bottom: 20px !important;
-}
+
 
 select {
   cursor: pointer;
@@ -175,3 +171,7 @@ button:focus-visible {
     background-color: #2f0101 !important;
   }
 }
+
+/* .shift{
+  margin-left: 0.5rem;
+} */

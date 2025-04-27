@@ -141,7 +141,7 @@ function TicketForm() {
     return (
         <div className="container py-5">
             <div className="card animate__animated animate__fadeIn">
-                <h2 className="mb-4 text-center text-white">Vérification de Ticket</h2>
+                <h2 className="mb-4 text-center text-white text-decoration-underline">Vérification de Ticket</h2>
 
                 {successMessage && <div className="alert alert-success text-white">{successMessage}</div>}
                 {errorMessage && <div className="alert alert-danger text-white">{errorMessage}</div>}
@@ -150,12 +150,13 @@ function TicketForm() {
                 {loading && <ProgressBar now={progress} label={`${progress}%`} />}
 
                 <form onSubmit={handleSubmit}>
-                    <div className="mb-3 d-flex flex-wrap">
-                        <div className=" flex-fill mb-2 mb-md-0">
-                            <input type="text" placeholder="Prénom" className="form-control text-white" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
-                        </div>
+                    <div className="mb-3 d-flex">
+                        
                         <div className=" flex-fill mb-2 mb-md-0">
                             <input type="text" placeholder="Nom" className="form-control text-white" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+                        </div>
+                        <div className=" ms-4 flex-fill mb-2 mb-md-0">
+                            <input type="text" placeholder="Prénom" className="form-control text-white" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
                         </div>
                     </div>
 
@@ -164,7 +165,7 @@ function TicketForm() {
                     </div>
 
                     <div className="mb-3">
-                        <input type="email" placeholder="Email" className="form-control" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                        <input type="email" placeholder="Email*" className="form-control" value={email} onChange={(e) => setEmail(e.target.value)} required />
                     </div>
 
                     <div className="mb-3">
@@ -190,11 +191,21 @@ function TicketForm() {
                     </div>
 
                     {image && (
-                        <div className="mb-3">
-                            <h5 className='text-white'>Aperçu de l'image :</h5>
-                            <img src={URL.createObjectURL(image)} alt="Aperçu de l'image" style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px' }} />
-                        </div>
-                    )}
+    <div className="mb-3 text-center">
+        <h5 className='text-white'>Aperçu de l'image :</h5>
+        <img src={URL.createObjectURL(image)} alt="Aperçu de l'image" style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', marginBottom: '10px' }} />
+        <br />
+        <button type="button" className="btn text-white  mt-2" onClick={() => {
+            setImage(null);
+            setOcrCode('');
+            setProgress(0);
+            toast.info("Image supprimée !");
+        }}>
+            Supprimer l'image
+        </button>
+    </div>
+)}
+
 
                     <button type="submit" className="btn btn-danger w-100" disabled={loading}>
                         {loading ? 'Vérification en cours...' : 'Vérifier'}

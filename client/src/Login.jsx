@@ -76,7 +76,7 @@ const Login = () => {
             />
           </div>
 
-          <button type="submit" className="btn w-100" disabled={loading}>
+          <button type="submit" className="btn w-100 text-white" disabled={loading}>
             {loading ? 'Connexion en cours...' : 'Se connecter'}
           </button>
         </form>

@@ -48,7 +48,7 @@ const Register = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
     >
-      <h2 className="mb-4 text-white">CRÉATION DE MOT DE PASSE</h2>
+      <h2 className="mb-4 text-white text-center fs-4">CRÉATION DE MOT DE PASSE</h2>
 
       {error && <div className="alert alert-danger">{error}</div>}
 
@@ -56,7 +56,7 @@ const Register = () => {
         <div className="mb-3">
           <input 
             type="text" 
-            className="form-control"
+            className="form-control w-75"
             placeholder="Nom d'utilisateur" 
             value={username} 
             onChange={(e) => setUsername(e.target.value)} 
@@ -67,7 +67,7 @@ const Register = () => {
         <div className="mb-3">
           <input 
             type="password" 
-            className="form-control"
+            className="form-control w-75"
             placeholder="Mot de passe" 
             value={password} 
             onChange={(e) => setPassword(e.target.value)} 
@@ -75,7 +75,7 @@ const Register = () => {
           />
         </div>
 
-        <button type="submit" className="btn text-white fs-5" disabled={loading}>
+        <button type="submit" className="btn text-white w-25" disabled={loading}>
           {loading ? 'Création en cours...' : 'Créer'}
         </button>
       </form>

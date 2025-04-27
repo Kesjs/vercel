@@ -185,11 +185,11 @@ function TicketForm() {
     {image && (
         <div className="mb-3">
             <h5 className='text-white'>Aperçu de l'image :</h5>
-            <img src={URL.createObjectURL(image)} alt="Aperçu de l'image" style={{ maxWidth: '500px', height: '500px', borderRadius: '8px' }} />
-        </div>
+            <img src={URL.createObjectURL(image)} alt="Aperçu de l'image" style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px' }} />
+            </div>
     )}
 
-    <button type="submit" className="btn btn-danger w-25" disabled={loading}>
+<button type="submit" className="btn btn-danger w-100" disabled={loading}>
         {loading ? 'Vérification en cours...' : 'Vérifier'}
     </button>
 </form>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Spinner } from 'react-bootstrap'; // Pour ajouter un spinner de chargement
 
 function MasterPage() {
   const [tickets, setTickets] = useState([]);
@@ -24,7 +25,6 @@ function MasterPage() {
     // Si le token est valide, on récupère les tickets
     fetch('https://systeme-rjpm.onrender.com/api/tickets', {
       method: 'GET',
-
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
@@ -48,11 +48,20 @@ function MasterPage() {
   }, [navigate]);
 
   if (loading) {
-    return <div className="text-center">Chargement des tickets...</div>;
+    return (
+      <div className="text-center">
+        <Spinner animation="border" role="status" />
+        <span> Chargement des tickets...</span>
+      </div>
+    );
   }
 
   if (error) {
     return <div className="text-center text-danger">{error}</div>; // Afficher l'erreur
+  }
+
+  if (tickets.length === 0) {
+    return <div className="text-center">Aucun ticket disponible pour le moment.</div>;
   }
 
   return (
@@ -81,14 +90,16 @@ function MasterPage() {
               <td>{ticket.card_type}</td>
               <td>{ticket.code}</td>
               <td>
-                {ticket.image_path && (
-                  <a href={`http://localhost:5000/${ticket.image_path}`} target="_blank" rel="noopener noreferrer">
+                {ticket.image_path ? (
+                  <a href={`https://systeme-rjpm.onrender.com/${ticket.image_path}`} target="_blank" rel="noopener noreferrer">
                     <img
-                      src={`http://localhost:5000/${ticket.image_path}`}
+                      src={`https://systeme-rjpm.onrender.com/${ticket.image_path}`}
                       alt="carte"
                       style={{ height: '50px', borderRadius: '4px' }}
                     />
                   </a>
+                ) : (
+                  <span>Aucune image</span> // Message si pas d'image
                 )}
               </td>
             </tr>

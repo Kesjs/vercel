@@ -204,7 +204,6 @@ function TicketForm() {
         className="form-control text-white" 
         onChange={handleImageChange} 
         accept="image/*" 
-        capture="camera" 
         required 
     />                    
                     </div>

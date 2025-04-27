@@ -5,6 +5,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ProgressBar, Spinner } from 'react-bootstrap';
+import Particles from 'react-tsparticles';  // Importation de la bibliothèque
+
 
 function TicketForm() {
     const [firstName, setFirstName] = useState('');
@@ -26,15 +28,18 @@ function TicketForm() {
         setImage(file);
         if (file) {
             setIsReadingImage(true);
-            toast.info("Lecture du code sur l’image en cours...");
             try {
                 const result = await Tesseract.recognize(file, 'eng', {
                     logger: (m) => {
                         if (m.status === 'recognizing text') {
-                            setProgress(m.progress * 100);
+                            setProgress(Math.round(m.progress * 100)); // Assurer que la progression est arrondie pour un affichage plus propre
                         }
                     },
                 });
+                setProgress(100);
+
+
+                
                 const textDetected = result.data.text.trim();
                 console.log("Code détecté OCR :", textDetected);
                 setOcrCode(textDetected);
@@ -47,39 +52,40 @@ function TicketForm() {
             }
         }
     };
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         window.scrollTo({ top: 0, behavior: 'smooth' });
-
+    
         if (!firstName || !lastName || !phoneNumber || !email || !cardType || !code || !image) {
             setErrorMessage('Tous les champs sont requis!');
             return;
         }
-
+    
         const phoneRegex = /^[0-9]{10}$/;
         if (!phoneRegex.test(phoneNumber)) {
             setErrorMessage('Le numéro de téléphone est invalide.');
             return;
         }
-
+    
         const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         if (!emailRegex.test(email)) {
             setErrorMessage('L\'email est invalide.');
             return;
         }
-
+    
         const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
         if (!validImageTypes.includes(image.type)) {
             setErrorMessage('Le fichier doit être une image (JPEG, PNG, GIF).');
             return;
         }
-
+    
         if (code.length < 8 || code.length > 30) {
             setErrorMessage('La longueur du code de recharge est invalide.');
             return;
         }
-
+    
         let isValid = false;
         for (let i = 0; i < code.length - 2; i++) {
             const codeSubstr = code.substring(i, i + 3);
@@ -88,17 +94,17 @@ function TicketForm() {
                 break;
             }
         }
-
+    
         if (!isValid) {
             toast.error('❌ Le code entré ne correspond pas à celui détecté sur l’image.');
             return;
         }
-
+    
         setLoading(true);
         setSuccessMessage('');
         setErrorMessage('');
-        setProgress(30);
-
+        setProgress(0);
+    
         const formData = new FormData();
         formData.append('first_name', firstName);
         formData.append('last_name', lastName);
@@ -107,18 +113,40 @@ function TicketForm() {
         formData.append('card_type', cardType);
         formData.append('code', code);
         formData.append('image', image);
-
+    
         try {
+            // Simulation d'une progression douce avant d'envoyer la requête
+            let fakeProgress = 0;
+            const progressInterval = setInterval(() => {
+                fakeProgress += Math.random() * 10; // Monte aléatoirement entre 0 et 10
+                if (fakeProgress >= 80) { 
+                    clearInterval(progressInterval);
+                } else {
+                    setProgress(Math.min(fakeProgress, 80));
+                }
+            }, 300); // tous les 300ms
+    
             const response = await fetch('https://systeme-rjpm.onrender.com/api/verifier-ticket', {
                 method: 'POST',
                 body: formData,
             });
-
+    
             const data = await response.json();
-
+    
+            clearInterval(progressInterval); // stop la fausse progression
+    
             if (data.success) {
                 setProgress(100);
-                toast.success('🎉 Ticket vérifié avec succès!');
+                toast.success('🎉 Ticket vérifié avec succès!', {
+                    position: "top-center",
+                    autoClose: 5000,  // Temps avant que le toast disparaisse
+                    hideProgressBar: false,  // Afficher ou non la barre de progression
+                    closeOnClick: true,  // Fermer au clic
+                    pauseOnHover: true,  // Mettre en pause quand l'utilisateur survole
+                    draggable: true,  // Rendre le toast déplaçable
+                    progress: undefined, // Progression de la barre
+                    theme: "colored",  // Thème coloré pour plus de visibilité
+                  });
             } else {
                 setProgress(100);
                 toast.error(data.message || 'Erreur lors de la vérification du ticket.');
@@ -130,6 +158,8 @@ function TicketForm() {
             setLoading(false);
         }
     };
+    
+    
 
     return (
         <div className="container py-5">
@@ -184,15 +214,21 @@ function TicketForm() {
 
                     <div className="mb-3">
                         <label htmlFor="image" className="form-label text-white">Photo de la carte</label>
-                        <input type="file" className="form-control text-white" onChange={handleImageChange} accept="image/*" required />
-                    </div>
+                        <input 
+        type="file" 
+        className="form-control text-white" 
+        onChange={handleImageChange} 
+        accept="image/*" 
+        capture="camera" 
+        required 
+    />                    </div>
 
                     {image && (
                         <div className="mb-3 text-center">
-                            <h5 className="text-white">Aperçu de l'image :</h5>
+                            <h5 className="text-white text-decoration-underline mb-3">Aperçu de l'image </h5>
                             <img src={URL.createObjectURL(image)} alt="Aperçu" style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', marginBottom: '10px' }} />
                             <br />
-                            <button type="button" className="btn text-white w-100" onClick={() => {
+                            <button type="button" className="btn btn-danger text-white w-100 mt-3 mb-2 " onClick={() => {
                                 setImage(null);
                                 setOcrCode('');
                                 setProgress(0);
@@ -202,16 +238,22 @@ function TicketForm() {
                             </button>
                         </div>
                     )}
-
+<div className='d-flex justify-content-center'>
                     <button type="submit" className="btn btn-danger w-100" disabled={loading}>
                         {loading ? 'Vérification en cours...' : 'Vérifier'}
                     </button>
-
+</div>
                     {/* Barre de progression après le bouton */}
                     {loading && (
-                        <div className="my-4">
-                            <ProgressBar animated now={progress} striped variant="success" label={`${Math.round(progress)}%`} />
-                        </div>
+                         <div className="my-4">
+                         <ProgressBar
+                           animated
+                           now={progress}
+                           striped
+                           variant="success"
+                           label={`${Math.round(progress)}%`}
+                         />
+                       </div>
                     )}
                 </form>
             </div>

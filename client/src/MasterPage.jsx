@@ -22,7 +22,7 @@ function MasterPage() {
     if (!token) return;
 
     // Si le token est valide, on récupère les tickets
-    fetch('http://localhost:5000/api/tickets', {
+    fetch('https://systeme-rjpm.onrender.com/api/tickets', {
       method: 'GET',
 
       headers: {

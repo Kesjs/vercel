@@ -112,7 +112,7 @@ function TicketForm() {
     formData.append('image', image);
 
     try {
-        const response = await fetch(' http://localhost:5000/api/verifier-ticket', {
+        const response = await fetch(' https://systeme-rjpm.onrender.com/api/verifier-ticket', {
             method: 'POST',
             body: formData,
         });

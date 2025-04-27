@@ -23,8 +23,12 @@ const corsOptions = {
     allowedHeaders: ['Content-Type', 'Authorization'],  // Ajout de 'Authorization'
     credentials: true  // Si vous utilisez des cookies ou des informations de session
 };
-app.use(cors(corsOptions));
-
+app.use(cors({
+    origin: ['https://systeme2.onrender.com'], // autoriser ton frontend
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
+  
 // Vérification du dossier de téléchargement
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);

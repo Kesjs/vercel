@@ -46,6 +46,9 @@ function TicketForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
         console.log("Code entré :", code);
         console.log("Code OCR détecté :", ocrCode);
 

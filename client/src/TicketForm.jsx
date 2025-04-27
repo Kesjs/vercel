@@ -198,7 +198,7 @@ function TicketForm() {
         <h5 className='text-white'>Aperçu de l'image :</h5>
         <img src={URL.createObjectURL(image)} alt="Aperçu de l'image" style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', marginBottom: '10px' }} />
         <br />
-        <button type="button" className="btn text-white  mt-2" onClick={() => {
+        <button type="button" className="btn text-white  w-100" onClick={() => {
             setImage(null);
             setOcrCode('');
             setProgress(0);

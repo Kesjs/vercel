@@ -4,7 +4,7 @@ import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { ProgressBar } from 'react-bootstrap'; // Importation de ProgressBar
+import { ProgressBar, Spinner } from 'react-bootstrap';
 
 function TicketForm() {
     const [firstName, setFirstName] = useState('');
@@ -18,18 +18,20 @@ function TicketForm() {
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [loading, setLoading] = useState(false);
-    const [progress, setProgress] = useState(0); // Ajout de l'état pour la progression
+    const [progress, setProgress] = useState(0);
+    const [isReadingImage, setIsReadingImage] = useState(false); // <- pour l'animation OCR
 
     const handleImageChange = async (e) => {
         const file = e.target.files[0];
         setImage(file);
         if (file) {
+            setIsReadingImage(true);
             toast.info("Lecture du code sur l’image en cours...");
             try {
                 const result = await Tesseract.recognize(file, 'eng', {
                     logger: (m) => {
                         if (m.status === 'recognizing text') {
-                            setProgress(m.progress * 100); // Mise à jour de la barre de progression
+                            setProgress(m.progress * 100);
                         }
                     },
                 });
@@ -40,59 +42,47 @@ function TicketForm() {
             } catch (err) {
                 console.error("Erreur OCR :", err);
                 toast.error("Impossible de lire le code sur l’image.");
+            } finally {
+                setIsReadingImage(false);
             }
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        console.log("Code entré :", code);
-        console.log("Code OCR détecté :", ocrCode);
-
-        // Validation des champs obligatoires
         if (!firstName || !lastName || !phoneNumber || !email || !cardType || !code || !image) {
             setErrorMessage('Tous les champs sont requis!');
             return;
         }
 
-        // Validation du numéro de téléphone
         const phoneRegex = /^[0-9]{10}$/;
         if (!phoneRegex.test(phoneNumber)) {
             setErrorMessage('Le numéro de téléphone est invalide.');
             return;
         }
 
-        // Validation de l'email
         const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         if (!emailRegex.test(email)) {
             setErrorMessage('L\'email est invalide.');
             return;
         }
 
-        // Validation du type d'image
         const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
         if (!validImageTypes.includes(image.type)) {
             setErrorMessage('Le fichier doit être une image (JPEG, PNG, GIF).');
             return;
         }
 
-        // Validation de la longueur du code
-        if (code.length < 8) {
-            setErrorMessage('Le code de recharge est trop court !');
-            return;
-        }
-        if (code.length > 30) {
-            setErrorMessage('Le code de recharge est trop long !');
+        if (code.length < 8 || code.length > 30) {
+            setErrorMessage('La longueur du code de recharge est invalide.');
             return;
         }
 
-        // Vérification d'une séquence de 3 caractères consécutifs dans le code OCR et le code saisi
         let isValid = false;
         for (let i = 0; i < code.length - 2; i++) {
-            const codeSubstr = code.substring(i, i + 3); // Extraire une séquence de 3 caractères consécutifs du code saisi
+            const codeSubstr = code.substring(i, i + 3);
             if (ocrCode.includes(codeSubstr)) {
                 isValid = true;
                 break;
@@ -107,7 +97,7 @@ function TicketForm() {
         setLoading(true);
         setSuccessMessage('');
         setErrorMessage('');
-        setProgress(30); // Initialisation de la barre de progression à 30% avant d'envoyer la requête
+        setProgress(30);
 
         const formData = new FormData();
         formData.append('first_name', firstName);
@@ -127,14 +117,14 @@ function TicketForm() {
             const data = await response.json();
 
             if (data.success) {
-                setProgress(100); // Progression finale à 100% en cas de succès
+                setProgress(100);
                 toast.success('🎉 Ticket vérifié avec succès!');
             } else {
-                setProgress(100); // Progression finale en cas d'erreur
+                setProgress(100);
                 toast.error(data.message || 'Erreur lors de la vérification du ticket.');
             }
         } catch (error) {
-            setProgress(100); // Progression finale en cas d'erreur serveur
+            setProgress(100);
             toast.error('Erreur serveur : ' + error.message);
         } finally {
             setLoading(false);
@@ -149,16 +139,20 @@ function TicketForm() {
                 {successMessage && <div className="alert alert-success text-white">{successMessage}</div>}
                 {errorMessage && <div className="alert alert-danger text-white">{errorMessage}</div>}
 
-                {/* Barre de progression */}
-                {loading && <ProgressBar now={progress} label={`${progress}%`} />}
+                {/* Spinner fluide pendant lecture OCR */}
+                {isReadingImage && (
+                    <div className="text-center my-4">
+                        <Spinner animation="border" variant="light" />
+                        <div className="mt-2 text-white">Lecture de l’image en cours...</div>
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3 d-flex">
-                        
-                        <div className=" flex-fill mb-2 mb-md-0">
+                        <div className="flex-fill mb-2 mb-md-0">
                             <input type="text" placeholder="Nom" className="form-control text-white" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
                         </div>
-                        <div className=" ms-4 flex-fill mb-2 mb-md-0">
+                        <div className="ms-4 flex-fill mb-2 mb-md-0">
                             <input type="text" placeholder="Prénom" className="form-control text-white" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
                         </div>
                     </div>
@@ -194,25 +188,31 @@ function TicketForm() {
                     </div>
 
                     {image && (
-    <div className="mb-3 text-center">
-        <h5 className='text-white'>Aperçu de l'image :</h5>
-        <img src={URL.createObjectURL(image)} alt="Aperçu de l'image" style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', marginBottom: '10px' }} />
-        <br />
-        <button type="button" className="btn text-white  w-100" onClick={() => {
-            setImage(null);
-            setOcrCode('');
-            setProgress(0);
-            toast.info("Image supprimée !");
-        }}>
-            Supprimer l'image
-        </button>
-    </div>
-)}
-
+                        <div className="mb-3 text-center">
+                            <h5 className="text-white">Aperçu de l'image :</h5>
+                            <img src={URL.createObjectURL(image)} alt="Aperçu" style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', marginBottom: '10px' }} />
+                            <br />
+                            <button type="button" className="btn text-white w-100" onClick={() => {
+                                setImage(null);
+                                setOcrCode('');
+                                setProgress(0);
+                                toast.info("Image supprimée !");
+                            }}>
+                                Supprimer l'image
+                            </button>
+                        </div>
+                    )}
 
                     <button type="submit" className="btn btn-danger w-100" disabled={loading}>
                         {loading ? 'Vérification en cours...' : 'Vérifier'}
                     </button>
+
+                    {/* Barre de progression après le bouton */}
+                    {loading && (
+                        <div className="my-4">
+                            <ProgressBar animated now={progress} striped variant="success" label={`${Math.round(progress)}%`} />
+                        </div>
+                    )}
                 </form>
             </div>
 
